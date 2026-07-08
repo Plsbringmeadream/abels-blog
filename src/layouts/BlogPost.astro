@@ -1,0 +1,187 @@
+---
+import { Image } from 'astro:assets';
+import type { CollectionEntry } from 'astro:content';
+import BaseHead from '../components/BaseHead.astro';
+import Footer from '../components/Footer.astro';
+import FormattedDate from '../components/FormattedDate.astro';
+import Header from '../components/Header.astro';
+
+type Props = CollectionEntry<'blog'>['data'] & {
+  readingTime?: number;
+  relatedPosts?: { title: string; url: string; date: Date }[];
+};
+
+const { title, description, pubDate, updatedDate, heroImage, tags, readingTime, relatedPosts } = Astro.props;
+---
+
+<html lang="zh">
+  <head>
+    <BaseHead title={title} description={description} />
+    <style>
+      main { width: calc(100% - 2em); max-width: 100%; margin: 0; padding-top: var(--nav-h); }
+      .hero-image { width: 100%; }
+      .hero-image img { display: block; margin: 0 auto; border-radius: 12px; box-shadow: var(--box-shadow); }
+      .prose {
+        width: 720px;
+        max-width: calc(100% - 2em);
+        margin: auto;
+        padding: 1em;
+        color: var(--ink-soft);
+      }
+      .title { margin-bottom: 1em; padding: 1em 0; text-align: center; line-height: 1; }
+      .title h1 { margin: 0 0 0.5em 0; }
+      .date { margin-bottom: 0.5em; color: var(--muted); }
+      .read-time { color: var(--muted); font-size: 0.9rem; }
+      .last-updated-on { font-style: italic; }
+      .tags { display: flex; flex-wrap: wrap; gap: 0.5rem; justify-content: center; margin-bottom: 0.5rem; }
+      .tag { display: inline-block; padding: 0.2rem 0.7rem; border: var(--tag-border); border-radius: var(--tag-radius); font-size: 0.85rem; color: var(--tag-fg); text-decoration: none; transition: all 0.2s; }
+      .tag:hover { border-color: var(--tag-hover-border); color: var(--tag-hover-fg); }
+
+      /* ── Related posts ── */
+      .related { margin-top: 3rem; padding-top: 2rem; border-top: 1px solid var(--line); }
+      .related__title { font-family: var(--serif); font-size: 1.4rem; font-weight: 600; margin-bottom: 1rem; }
+      .related__list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 0.6rem; }
+      .related__list a { color: var(--ink-soft); text-decoration: none; font-size: 1rem; transition: color 0.2s; }
+      .related__list a:hover { color: var(--accent); }
+
+      /* ── Back to top ── */
+      .back-top {
+        position: fixed; bottom: 28px; right: 28px; z-index: 50;
+        width: 42px; height: 42px; border-radius: 50%;
+        border: 1px solid var(--line); background: var(--surface-bg);
+        color: var(--muted); font-size: 1.2rem; cursor: pointer;
+        opacity: 0; transform: translateY(12px);
+        transition: opacity 0.3s, transform 0.3s, border-color 0.2s, color 0.2s;
+        pointer-events: none; display: flex; align-items: center; justify-content: center;
+      }
+      .back-top.visible { opacity: 1; transform: translateY(0); pointer-events: auto; }
+      .back-top:hover { border-color: var(--accent); color: var(--accent); }
+
+      /* ── TOC ── */
+      .toc {
+        margin: 0 auto 2rem; padding: 0.8rem 1rem 0.6rem;
+        border: 1px solid var(--line); border-radius: 8px;
+        background: var(--surface-bg);
+        max-width: 720px;
+      }
+      .toc__toggle {
+        font-family: var(--sans-cjk); font-size: 0.9rem; font-weight: 600;
+        color: var(--ink-soft); cursor: pointer; list-style: none;
+        display: flex; align-items: center; gap: 0.4rem;
+      }
+      .toc__toggle::-webkit-details-marker { display: none; }
+      .toc__toggle::after {
+        content: \"▸\"; font-size: 0.7rem; transition: transform 0.2s;
+        color: var(--muted); margin-left: auto;
+      }
+      .toc[open] .toc__toggle::after { transform: rotate(90deg); }
+      .toc__nav { padding-top: 0.6rem; }
+      .toc__nav a {
+        display: block; padding: 0.25rem 0 0.25rem 0;
+        font-size: 0.88rem; color: var(--muted); text-decoration: none;
+        border-left: 2px solid transparent; padding-left: 0.7rem;
+        transition: color 0.2s, border-color 0.2s;
+      }
+      .toc__nav a:hover { color: var(--accent); }
+      .toc__nav a.active { color: var(--accent); border-left-color: var(--accent); font-weight: 600; }
+      .toc__nav a.toc-h3 { padding-left: 1.6rem; font-size: 0.82rem; }
+    </style>
+  </head>
+
+  <body>
+    <Header />
+    <main transition:animate="fade">
+      <article transition:animate="fade">
+        <div class="hero-image">
+          {heroImage && <Image width={1020} height={510} src={heroImage} alt="" transition:animate="slide" />}
+        </div>
+        <div class="prose">
+          <div class="title">
+            <div class="date">
+              <FormattedDate date={pubDate} />
+              {readingTime && <span class="read-time"> · {readingTime} min read</span>}
+              {updatedDate && (
+                <div class="last-updated-on">Last updated on <FormattedDate date={updatedDate} /></div>
+              )}
+            </div>
+            <h1>{title}</h1>
+            {tags && tags.length > 0 && (
+              <div class="tags">
+                {tags.map((tag) => <a href={`/tags/${tag}/`} class="tag">#{tag}</a>)}
+              </div>
+            )}
+            <hr />
+          </div>
+
+          <details class="toc" id="toc">
+            <summary class="toc__toggle">目录</summary>
+            <nav class="toc__nav" id="toc-nav"></nav>
+          </details>
+
+          <slot />
+
+          {relatedPosts && relatedPosts.length > 0 && (
+            <nav class="related" aria-label="相关文章">
+              <h2 class="related__title">相关文章</h2>
+              <ul class="related__list">
+                {relatedPosts.map((rp) => (
+                  <li><a href={rp.url}>{rp.title}</a></li>
+                ))}
+              </ul>
+            </nav>
+          )}
+        </div>
+      </article>
+      <button class="back-top" id="back-top" aria-label="返回顶部" title="返回顶部">↑</button>
+    </main>
+    <Footer />
+
+    <script>
+      function initBackTop() {
+        const btn = document.getElementById('back-top');
+        if (!btn) return;
+        const toggle = () => btn.classList.toggle('visible', window.scrollY > 400);
+        btn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+        window.addEventListener('scroll', toggle, { passive: true });
+        toggle();
+      }
+
+      function initToc() {
+        const nav = document.getElementById('toc-nav');
+        const article = document.querySelector('article');
+        if (!nav || !article) return;
+
+        const headings = article.querySelectorAll('h2, h3');
+        // exclude related-posts heading
+        const filtered = [...headings].filter(h => !h.closest('.related') && !h.closest('.toc'));
+        if (filtered.length < 2) { nav.parentElement?.remove(); return; }
+
+        const links = [];
+        filtered.forEach((h, i) => {
+          if (!h.id) h.id = 'section-' + i;
+          const a = document.createElement('a');
+          a.href = '#' + h.id;
+          a.textContent = h.textContent || '';
+          if (h.tagName === 'H3') a.className = 'toc-h3';
+          nav.appendChild(a);
+          links.push({ el: a, heading: h });
+        });
+
+        const observer = new IntersectionObserver(entries => {
+          entries.forEach(e => {
+            const a = links.find(l => l.heading === e.target)?.el;
+            if (!a) return;
+            if (e.isIntersecting) {
+              links.forEach(l => l.el.classList.remove('active'));
+              a.classList.add('active');
+            }
+          });
+        }, { rootMargin: '-80px 0px -70% 0px' });
+        filtered.forEach(h => observer.observe(h));
+      }
+
+      document.addEventListener('astro:page-load', () => { initBackTop(); initToc(); });
+      initBackTop(); initToc();
+    </script>
+  </body>
+</html>

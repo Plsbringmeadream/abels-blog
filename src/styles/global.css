@@ -1,0 +1,263 @@
+/*
+  ═══════════ Abel's Blog — Sac Design Language ═══════════
+  Warm paper, orange accent, serif elegance.
+*/
+
+/* ── Design Tokens ── */
+:root {
+  --accent: #F0652E;
+  --accent-dark: #c94d1a;
+  --black: 26, 23, 20;
+  --gray: 125, 117, 106;
+  --gray-light: 201, 192, 178;
+  --gray-dark: 58, 52, 45;
+  --paper: #F4EFE6;
+  --ink: #1A1714;
+  --ink-soft: #3a342d;
+  --line: #C9C0B2;
+  --muted: #7d756a;
+
+  --serif: 'Playfair Display', 'Noto Serif SC', Georgia, serif;
+  --serif-cjk: 'Noto Serif SC', 'Playfair Display', serif;
+  --sans: 'Inter', 'Noto Sans SC', system-ui, -apple-system, sans-serif;
+  --sans-cjk: 'Noto Sans SC', 'Inter', sans-serif;
+  --mono: ui-monospace, 'SF Mono', 'Menlo', 'Roboto Mono', monospace;
+
+  --nav-h: 78px;
+  --pad-x: clamp(32px, 5vw, 72px);
+  --rail-x: 48px;
+  --ease: cubic-bezier(.22, .61, .36, 1);
+  --box-shadow: 0 2px 6px rgba(var(--gray), 25%), 0 8px 24px rgba(var(--gray), 33%);
+
+  /* ── Component Tokens ── */
+  /* Button */
+  --btn-fg: var(--ink);
+  --btn-border: 1px solid var(--ink);
+  --btn-hover-bg: var(--accent);
+  --btn-hover-fg: var(--paper);
+  --btn-hover-border: 1px solid var(--accent);
+
+  /* Card */
+  --card-bg: rgba(26,23,20,.03);
+  --card-border: 1px solid var(--line);
+  --card-radius: 8px;
+
+  /* Tag / Pill */
+  --tag-fg: var(--ink-soft);
+  --tag-border: 1px solid var(--line);
+  --tag-radius: 999px;
+  --tag-hover-bg: rgba(240,101,46,.06);
+  --tag-hover-fg: var(--accent);
+  --tag-hover-border: 1px solid var(--accent);
+
+  /* Input */
+  --input-fg: var(--ink);
+  --input-border: 1px solid var(--line);
+
+  /* Link */
+  --link-fg: var(--accent);
+  --link-hover-fg: var(--accent-dark);
+
+  /* Nav */
+  --nav-fg: var(--ink-soft);
+  --nav-hover-fg: var(--accent);
+  --nav-active-fg: var(--ink);
+
+  /* Surface (modals, panels) */
+  --surface-bg: var(--paper);
+  --surface-border: 1px solid var(--line);
+  --surface-shadow: 0 16px 48px rgba(0,0,0,0.2);
+
+  /* Semantic status colors */
+  --status-active: #4ade80;
+  --status-active-text: #059669;
+  --status-active-bg: rgba(74,222,128,.1);
+  --status-ongoing: #818cf8;
+  --status-ongoing-text: #4338ca;
+  --status-ongoing-bg: rgba(129,140,248,.1);
+  --tag-purple: #8b5cf6;
+  --tag-purple-border: #ddd6fe;
+  --tag-purple-bg: #f5f3ff;
+  --tag-green: #059669;
+  --tag-green-border: #a7f3d0;
+  --tag-green-bg: #ecfdf5;
+}
+
+/* ── Fonts ── */
+@font-face {
+  font-family: "Atkinson";
+  src: url("/fonts/atkinson-regular.woff") format("woff");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Atkinson";
+  src: url("/fonts/atkinson-bold.woff") format("woff");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* ── Reset ── */
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+img { display: block; max-width: 100%; height: auto; border-radius: 8px; }
+a { color: inherit; text-decoration: none; }
+html, body { overflow-x: hidden; }
+
+/* ── Body ── */
+body {
+  font-family: "Atkinson", "Noto Sans SC", system-ui, -apple-system, sans-serif;
+  background: var(--paper);
+  color: var(--ink);
+  font-size: 20px;
+  line-height: 1.7;
+  -webkit-font-smoothing: antialiased;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  background-image: radial-gradient(rgba(26,23,20,.02) 1px, transparent 1px);
+  background-size: 3px 3px;
+  text-align: left;
+}
+
+/* Paper texture overlay */
+body::before {
+  content: "";
+  position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  opacity: .045; mix-blend-mode: multiply;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* ── Typography ── */
+h1, h2, h3, h4, h5, h6 {
+  margin: 0 0 0.5rem 0;
+  color: var(--ink);
+  line-height: 1.2;
+}
+h1 { font-size: 3.052em; }
+h2 { font-size: 2.441em; }
+h3 { font-size: 1.953em; }
+h4 { font-size: 1.563em; }
+h5 { font-size: 1.25em; }
+strong, b { font-weight: 700; }
+p { margin-bottom: 1em; }
+
+a { color: var(--link-fg); }
+a:hover { color: var(--link-hover-fg); }
+
+/* ── Code ── */
+code {
+  padding: 2px 5px;
+  background-color: rgba(var(--gray-light), 0.3);
+  border-radius: 2px;
+  font-size: 0.9em;
+}
+pre {
+  padding: 1.5em;
+  border-radius: 8px;
+  overflow-x: auto;
+  background: rgba(26,23,20,.04);
+  border: 1px solid var(--line);
+}
+pre code {
+  all: unset;
+  font-family: var(--mono);
+  font-size: 0.85em;
+  line-height: 1.6;
+}
+
+/* ── Blockquote ── */
+blockquote {
+  border-left: 4px solid var(--accent);
+  padding: 0 0 0 20px;
+  margin: 0;
+  font-size: 1.1em;
+  color: var(--ink-soft);
+}
+
+/* ── HR ── */
+hr { border: none; border-top: 1px solid var(--line); }
+
+/* ── Tables ── */
+table { width: 100%; }
+
+/* ── Content page layout ── */
+main {
+  position: relative;
+  z-index: 2;
+}
+.blog-main {
+  width: 720px;
+  max-width: calc(100% - 2rem);
+  margin: 0 auto;
+  padding: calc(var(--nav-h) + 1.5rem) 1.5rem 3em;
+}
+
+/* ── View Transitions ── */
+@keyframes fade-in { from { opacity: 0; } }
+@keyframes fade-out { to { opacity: 0; } }
+::view-transition-old(root) { animation: 0.25s ease fade-out both; }
+::view-transition-new(root) { animation: 0.25s ease fade-in both; }
+::view-transition-old(site-header),
+::view-transition-new(site-header) { animation: none; mix-blend-mode: normal; }
+
+/* ── Utilities ── */
+.sr-only {
+  border: 0; padding: 0; margin: 0;
+  position: absolute !important; height: 1px; width: 1px;
+  overflow: hidden;
+  clip: rect(1px 1px 1px 1px); clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* ── Scroll reveal: visible by default, GSAP enhances ── */
+[data-reveal] { opacity: 1; transform: none; }
+
+/* ── Dark mode ── */
+:root { --bg: var(--paper); --fg: var(--ink); }
+:root.dark {
+  --bg: #0f1219;
+  --fg: #e8e8e8;
+  --paper: #0f1219;
+  --ink: #e8e8e8;
+  --ink-soft: #b0b0b0;
+  --line: #333;
+  --muted: #888;
+  --gray-light: 60, 60, 70;
+  --box-shadow: 0 2px 6px rgba(0,0,0,40%), 0 8px 24px rgba(0,0,0,50%);
+
+  /* component overrides */
+  --card-bg: rgba(255,255,255,.04);
+  --tag-hover-bg: rgba(240,101,46,.1);
+  --nav-active-fg: #e8e8e8;
+  --surface-shadow: 0 16px 48px rgba(0,0,0,0.5);
+
+  /* semantic status overrides */
+  --status-active-bg: rgba(74,222,128,.12);
+  --status-ongoing-bg: rgba(129,140,248,.12);
+  --tag-purple-bg: rgba(139,92,246,.12);
+  --tag-purple-border: rgba(139,92,246,.25);
+  --tag-green-bg: rgba(5,150,105,.12);
+  --tag-green-border: rgba(5,150,105,.25);
+}
+
+:root.dark pre {
+  background: rgba(255,255,255,.04);
+  border-color: #333;
+}
+:root.dark pre code { color: #d4d4d4; }
+:root.dark blockquote { color: #999; }
+
+/* ── Reduced motion ── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
+
+/* ── Responsive ── */
+@media (max-width: 720px) {
+  body { font-size: 18px; }
+  :root {
+    --pad-x: 20px;
+    --rail-x: 20px;
+  }
+}

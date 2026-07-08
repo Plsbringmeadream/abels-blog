@@ -1,0 +1,235 @@
+---
+// SearchModal.astro - Client-side search modal
+---
+
+<div id="search-overlay" class="search-overlay" style="display:none">
+	<div class="search-modal">
+		<div class="search-header">
+			<input
+				type="text"
+				id="search-input"
+				placeholder="搜索文章标题和描述..."
+				autocomplete="off"
+			/>
+			<button class="search-close" aria-label="Close search">&times;</button>
+		</div>
+		<div id="search-results" class="search-results">
+			<p class="search-hint">输入关键词开始搜索</p>
+		</div>
+	</div>
+</div>
+
+<style>
+	.search-overlay {
+		position: fixed;
+		inset: 0;
+		background: rgba(0,0,0,0.5);
+		z-index: 200;
+		display: flex;
+		align-items: flex-start;
+		justify-content: center;
+		padding-top: 15vh;
+	}
+	.search-modal {
+		background: var(--surface-bg);
+		border-radius: 12px;
+		width: 560px;
+		max-width: calc(100vw - 2rem);
+		max-height: 60vh;
+		display: flex;
+		flex-direction: column;
+		box-shadow: var(--surface-shadow);
+		overflow: hidden;
+	}
+	:global(.dark) .search-modal {
+		background: #1e1e2e;
+	}
+	.search-header {
+		display: flex;
+		align-items: center;
+		border-bottom: var(--input-border);
+		padding: 0.75rem 1rem;
+		gap: 0.5rem;
+	}
+	:global(.dark) .search-header {
+		border-bottom-color: #333;
+	}
+	#search-input {
+		flex: 1;
+		border: none;
+		outline: none;
+		font-size: 1rem;
+		background: transparent;
+		color: var(--input-fg);
+	}
+	:global(.dark) #search-input {
+		color: #e8e8e8;
+	}
+	.search-close {
+		background: none;
+		border: none;
+		font-size: 1.5rem;
+		cursor: pointer;
+		color: var(--muted);
+		padding: 0 0.25rem;
+		line-height: 1;
+	}
+	.search-close:hover { color: var(--ink); }
+	:global(.dark) .search-close:hover { color: #fff; }
+	.search-results {
+		overflow-y: auto;
+		padding: 0.5rem;
+	}
+	.search-hint {
+		text-align: center;
+		color: var(--muted);
+		padding: 2rem 0;
+		font-size: 0.9rem;
+	}
+	.result-item {
+		display: block;
+		padding: 0.75rem 1rem;
+		text-decoration: none;
+		border-radius: 8px;
+		transition: background 0.15s;
+	}
+	.result-item:hover {
+		background: rgb(var(--gray-light));
+	}
+	:global(.dark) .result-item:hover {
+		background: #2a2a3e;
+	}
+	.result-title {
+		font-weight: 600;
+		color: var(--ink);
+		font-size: 0.95rem;
+		margin: 0 0 0.2rem;
+	}
+	:global(.dark) .result-title { color: #e8e8e8; }
+	.result-desc {
+		color: var(--muted);
+		font-size: 0.85rem;
+		margin: 0;
+		line-height: 1.4;
+	}
+	.no-results {
+		text-align: center;
+		color: var(--muted);
+		padding: 2rem 0;
+		font-size: 0.9rem;
+	}
+</style>
+
+<script>
+	interface SearchItem {
+		title: string;
+		description: string;
+		url: string;
+		pubDate: string;
+	}
+
+	let searchIndex: SearchItem[] | null = null;
+
+	async function loadIndex() {
+		if (searchIndex) return searchIndex;
+		try {
+			const res = await fetch('/api/search.json');
+			searchIndex = await res.json();
+		} catch {
+			searchIndex = [];
+		}
+		return searchIndex;
+	}
+
+	function renderResults(items: SearchItem[], query: string) {
+		const container = document.getElementById('search-results')!;
+		if (!query.trim()) {
+			container.innerHTML = '<p class="search-hint">输入关键词开始搜索</p>';
+			return;
+		}
+		if (items.length === 0) {
+			container.innerHTML = '<p class="no-results">没有找到相关文章</p>';
+			return;
+		}
+		container.innerHTML = items
+			.map(
+				(item) => `
+			<a href="${item.url}" class="result-item">
+				<p class="result-title">${highlight(item.title, query)}</p>
+				<p class="result-desc">${highlight(item.description, query)}</p>
+			</a>`
+			)
+			.join('');
+	}
+
+	function highlight(text: string, query: string) {
+		if (!query) return text;
+		const escaped = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+		return text.replace(new RegExp(`(${escaped})`, 'gi'), '<mark>$1</mark>');
+	}
+
+	let debounceTimer: ReturnType<typeof setTimeout>;
+
+	function initSearch() {
+		document.getElementById('search-input')?.addEventListener('input', (e) => {
+			const query = (e.target as HTMLInputElement).value;
+			clearTimeout(debounceTimer);
+			debounceTimer = setTimeout(async () => {
+				const index = (await loadIndex()) ?? [];
+				const q = query.toLowerCase();
+				const filtered = index.filter(
+					(item) =>
+						item.title.toLowerCase().includes(q) ||
+						item.description.toLowerCase().includes(q)
+				);
+				renderResults(filtered, query);
+			}, 200);
+		});
+
+		document.getElementById('search-overlay')?.addEventListener('click', (e) => {
+			if ((e.target as HTMLElement).id === 'search-overlay') {
+				closeSearch();
+			}
+		});
+	}
+
+	document.addEventListener('keydown', (e) => {
+		if (e.key === 'Escape') closeSearch();
+		if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+			e.preventDefault();
+			toggleSearch();
+		}
+	});
+
+	function openSearch() {
+		const overlay = document.getElementById('search-overlay')!;
+		overlay.style.display = 'flex';
+		document.getElementById('search-input')?.focus();
+		loadIndex();
+	}
+
+	function closeSearch() {
+		const overlay = document.getElementById('search-overlay')!;
+		overlay.style.display = 'none';
+		const input = document.getElementById('search-input') as HTMLInputElement;
+		if (input) input.value = '';
+		document.getElementById('search-results')!.innerHTML =
+			'<p class="search-hint">输入关键词开始搜索</p>';
+	}
+
+	function toggleSearch() {
+		const overlay = document.getElementById('search-overlay')!;
+		if (overlay.style.display === 'none' || !overlay.style.display) {
+			openSearch();
+		} else {
+			closeSearch();
+		}
+	}
+
+	// Expose globally for Header button
+	window._toggleSearch = toggleSearch;
+
+	// Run on initial load and after View Transitions navigation
+	document.addEventListener('astro:page-load', initSearch);
+	initSearch();
+</script>

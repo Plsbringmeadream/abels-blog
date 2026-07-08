@@ -1,0 +1,15 @@
+
+> @example/blog@0.0.1 dev
+> astro dev --host 127.0.0.1
+
+[vite] connected.
+23:38:46 [types] Generated 1ms
+[vite] connected.
+23:38:46 [content] Syncing content
+23:38:46 [content] Synced content
+23:38:46 [vite] Port 4321 is in use, trying another one...
+23:38:46 [vite] Port 4322 is in use, trying another one...
+23:38:46 [vite] Port 4323 is in use, trying another one...
+ astro  v6.4.7 ready in 1520 ms
+┃ Local    http://127.0.0.1:4324/
+23:38:46 watching for file changes...

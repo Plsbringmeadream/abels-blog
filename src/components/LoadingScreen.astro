@@ -1,0 +1,234 @@
+---
+// LoadingScreen.astro — Full-screen loading animation with curtain reveal
+---
+
+<div id="loading-screen" class="loading-screen">
+  <div class="loading-content">
+    <div class="loading-rings">
+      <div class="ring ring-1"></div>
+      <div class="ring ring-2"></div>
+      <div class="ring ring-3"></div>
+    </div>
+    <h1 class="loading-title">Abel's Blog</h1>
+    <p class="loading-sub">记录生活，分享热爱</p>
+    <div class="loading-bar">
+      <div class="loading-bar-fill"></div>
+    </div>
+  </div>
+  <!-- Curtain halves: slide apart from center -->
+  <div class="curtain curtain-left"></div>
+  <div class="curtain curtain-right"></div>
+</div>
+
+<style>
+  /* === Loading Screen Container === */
+  .loading-screen {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: auto;
+  }
+
+  .loading-screen.done {
+    display: none;
+  }
+
+  /* === Curtain Halves === */
+  .curtain {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 50%;
+    background: rgb(15, 18, 25);
+    z-index: 10;
+  }
+
+  .curtain-left {
+    left: 0;
+    transform-origin: left center;
+    animation: curtain-open-left 0.8s cubic-bezier(0.77, 0, 0.175, 1) 2s forwards;
+  }
+
+  .curtain-right {
+    right: 0;
+    transform-origin: right center;
+    animation: curtain-open-right 0.8s cubic-bezier(0.77, 0, 0.175, 1) 2s forwards;
+  }
+
+  @keyframes curtain-open-left {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-100%); }
+  }
+
+  @keyframes curtain-open-right {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(100%); }
+  }
+
+  /* === Loading Content === */
+  .loading-content {
+    position: relative;
+    z-index: 20;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    animation: content-fade-out 0.4s ease 1.7s forwards;
+  }
+
+  @keyframes content-fade-out {
+    to {
+      opacity: 0;
+      transform: scale(0.92);
+    }
+  }
+
+  /* === Rings === */
+  .loading-rings {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 200px;
+    height: 200px;
+  }
+
+  .ring {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    border: 1.5px solid transparent;
+  }
+
+  .ring-1 {
+    border-top-color: #2337ff;
+    animation: ring-spin 1.5s linear infinite;
+    inset: 0;
+  }
+  .ring-2 {
+    border-right-color: rgba(35, 55, 255, 0.5);
+    animation: ring-spin 2s linear infinite reverse;
+    inset: 15px;
+  }
+  .ring-3 {
+    border-bottom-color: rgba(35, 55, 255, 0.25);
+    animation: ring-spin 2.5s linear infinite;
+    inset: 30px;
+  }
+
+  @keyframes ring-spin {
+    to { transform: rotate(360deg); }
+  }
+
+  /* === Title: blur to sharp === */
+  .loading-title {
+    position: relative;
+    z-index: 1;
+    font-family: 'Atkinson', 'Noto Sans SC', system-ui, sans-serif;
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: #fff;
+    letter-spacing: 0.04em;
+    margin: 0;
+    opacity: 0;
+    filter: blur(12px);
+    animation: title-reveal 1s cubic-bezier(0.22, 1, 0.36, 1) 0.3s forwards;
+  }
+
+  @keyframes title-reveal {
+    to {
+      opacity: 1;
+      filter: blur(0);
+    }
+  }
+
+  .loading-sub {
+    position: relative;
+    z-index: 1;
+    font-family: 'Noto Sans SC', 'Atkinson', system-ui, sans-serif;
+    font-size: 0.95rem;
+    color: rgba(255, 255, 255, 0.5);
+    margin: 0;
+    letter-spacing: 0.15em;
+    opacity: 0;
+    animation: subtitle-fade 0.8s ease 0.8s forwards;
+  }
+
+  @keyframes subtitle-fade {
+    to { opacity: 1; }
+  }
+
+  /* === Progress Bar === */
+  .loading-bar {
+    position: relative;
+    z-index: 1;
+    width: 160px;
+    height: 2px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 2px;
+    overflow: hidden;
+    margin-top: 0.5rem;
+    opacity: 0;
+    animation: subtitle-fade 0.5s ease 0.6s forwards;
+  }
+
+  .loading-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #2337ff, #6b7fff);
+    border-radius: 2px;
+    width: 0;
+    animation: bar-fill 1.4s cubic-bezier(0.22, 1, 0.36, 1) 0.6s forwards;
+  }
+
+  @keyframes bar-fill {
+    to { width: 100%; }
+  }
+
+  /* === Mobile === */
+  @media (max-width: 600px) {
+    .loading-title {
+      font-size: 1.8rem;
+    }
+    .loading-rings {
+      width: 150px;
+      height: 150px;
+    }
+    .ring-2 { inset: 12px; }
+    .ring-3 { inset: 24px; }
+  }
+</style>
+
+<script>
+  // Skip animation on subsequent visits in the same session
+  (() => {
+    const el = document.getElementById('loading-screen');
+    if (!el) return;
+
+    if (sessionStorage.getItem('loading-played')) {
+      el.style.display = 'none';
+      document.body.classList.add('skip-loading');
+      return;
+    }
+
+    sessionStorage.setItem('loading-played', '1');
+
+    // Remove from DOM after curtain animation completes
+    const onEnd = (e: AnimationEvent) => {
+      if (e.animationName === 'curtain-open-right') {
+        el.classList.add('done');
+        el.removeEventListener('animationend', onEnd);
+      }
+    };
+    el.addEventListener('animationend', onEnd);
+
+    // Fallback: force remove after 3.5s
+    setTimeout(() => {
+      if (!el.classList.contains('done')) {
+        el.classList.add('done');
+      }
+    }, 3500);
+  })();
+</script>
