@@ -360,6 +360,11 @@ const techStack = ['Astro', 'Vercel', 'GSAP', 'Three.js', 'Python', 'Playwright'
     image-rendering: auto;
     filter: drop-shadow(0 10px 16px rgba(26,23,20,.16));
   }
+  /* Laptop screens are short: the bottom mascots crowd the CTA there.
+     Only show them when the hero is tall enough to have spare room. */
+  @media (max-height: 900px) {
+    .hero__mascots { display: none; }
+  }
 
   /* ── Pac-Man that chases the cursor across the hero (driven by pacman.js) ── */
   .pac-orbit {
@@ -673,25 +678,20 @@ const techStack = ['Astro', 'Vercel', 'GSAP', 'Three.js', 'Python', 'Playwright'
   .build__cta { display: flex; gap: 16px; margin-top: 34px; flex-wrap: wrap; }
   .build__cta .btn { height: 46px; padding: 0 20px; font-size: 14px; white-space: nowrap; }
 
-  /* ── Build stats ── */
+  /* ── Build stats: a wrapping row in the left column (never a floating
+     middle column — that overlapped the monitor on laptop widths). ── */
   .build__stats {
-    position: absolute;
-    left: calc(max(400px, 32%) + 80px);
-    top: 50%; transform: translateY(-50%);
-    display: flex; flex-direction: column; gap: 1rem;
-    z-index: 2;
+    position: relative; z-index: 2;
+    display: flex; flex-flow: row wrap; gap: 0.8rem;
+    max-width: 430px; margin-top: 6px;
   }
   .stat-card {
     display: flex; flex-direction: column; align-items: center; gap: 0.15rem;
-    padding: 1.1rem 1.6rem;
-    border: 1px solid var(--line);
+    padding: 1rem 1.35rem;
+    border: 1px solid var(--line); border-radius: 8px;
     background: var(--surface-bg);
-    min-width: 110px;
     text-align: center;
   }
-  .stat-card:first-child { border-radius: 8px 8px 0 0; }
-  .stat-card:last-child { border-radius: 0 0 8px 8px; }
-  .stat-card:only-child { border-radius: 8px; }
   .stat-card__value {
     font-family: var(--serif); font-size: 2rem; font-weight: 600;
     color: var(--accent); line-height: 1;
@@ -727,14 +727,7 @@ const techStack = ['Astro', 'Vercel', 'GSAP', 'Three.js', 'Python', 'Playwright'
   .build__scene canvas { display: block; width: 100%; aspect-ratio: 5 / 4; height: auto; cursor: pointer; }
   @media (max-width: 1100px) {
     .build__scene { display: none; }
-    .build__stats {
-      position: static; transform: none;
-      flex-direction: row; gap: 0.75rem;
-      margin-top: 28px;
-    }
-    .stat-card { min-width: 0; padding: 0.9rem 1.2rem; }
-    .stat-card:first-child { border-radius: 8px 0 0 8px; }
-    .stat-card:last-child { border-radius: 0 8px 8px 0; }
+    .build__stats { max-width: none; margin-top: 24px; }
   }
 
   /* ═══════════ CONTACT ═══════════ */
