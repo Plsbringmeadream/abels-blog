@@ -2,6 +2,8 @@
 import BaseHead from '../components/BaseHead.astro';
 import Footer from '../components/Footer.astro';
 import Header from '../components/Header.astro';
+import KeyboardFallback from '../components/3d-keyboard/KeyboardFallback.astro';
+import KeyboardScene from '../components/3d-keyboard/KeyboardScene';
 import { SITE_DESCRIPTION, SITE_TITLE } from '../consts';
 import { getCollection } from 'astro:content';
 import { getImage } from 'astro:assets';
@@ -214,6 +216,31 @@ const techStack = ['Astro', 'Vercel', 'GSAP', 'Three.js', 'Python', 'Playwright'
             ))}
           </div>
           <a href="/blog" class="blog-section__all" data-reveal>查看全部文章 <span class="arr">→</span></a>
+        </div>
+      </section>
+
+      <!-- ═══════════ KEYBOARD LAB ═══════════ -->
+      <section class="keyboard-lab" id="keyboard-lab">
+        <div class="keyboard-lab__intro" data-reveal>
+          <span class="keyboard-lab__kicker">KEYBOARD LAB / 键盘实验室</span>
+          <h2 class="keyboard-lab__title">Type something.</h2>
+          <p class="keyboard-lab__desc">
+            我正在使用的黑色 TKL 机械键盘，以程序化 Three.js 模型重建。
+            试着敲击实体键盘或直接点击键帽，红色轴下灯会实时响应。
+          </p>
+        </div>
+
+        <div class="keyboard-lab__stage" data-reveal>
+          <div class="keyboard-lab__desktop">
+            <KeyboardScene
+              client:media="(min-width: 901px)"
+              variant="homepage"
+              controls="compact"
+            />
+          </div>
+          <div class="keyboard-lab__mobile">
+            <KeyboardFallback />
+          </div>
         </div>
       </section>
 
@@ -632,6 +659,64 @@ const techStack = ['Astro', 'Vercel', 'GSAP', 'Three.js', 'Python', 'Playwright'
       grid-template-columns: 1fr;
       padding: 0 var(--pad-x);
     }
+  }
+
+  /* ═══════════ KEYBOARD LAB ═══════════ */
+  .keyboard-lab {
+    position: relative;
+    min-height: 92vh;
+    padding: calc(var(--nav-h) + 58px) var(--pad-x) 96px calc(var(--rail-x) + 56px);
+    overflow: hidden;
+    border-top: 1px solid var(--line);
+  }
+  .keyboard-lab__intro {
+    position: relative;
+    z-index: 2;
+    width: min(100%, 660px);
+  }
+  .keyboard-lab__kicker {
+    display: block;
+    margin-bottom: 22px;
+    color: var(--accent);
+    font-family: var(--mono);
+    font-size: 13px;
+    letter-spacing: .14em;
+  }
+  .keyboard-lab__title {
+    margin: 0;
+    font-family: var(--serif);
+    font-size: clamp(64px, 8vw, 118px);
+    font-weight: 600;
+    line-height: .9;
+    letter-spacing: -.025em;
+  }
+  .keyboard-lab__desc {
+    max-width: 590px;
+    margin: 26px 0 0;
+    color: var(--ink-soft);
+    font-family: var(--sans-cjk);
+    font-size: 16px;
+    font-weight: 300;
+    line-height: 1.8;
+  }
+  .keyboard-lab__stage {
+    position: relative;
+    width: 100%;
+    height: clamp(500px, 56vw, 720px);
+    margin-top: -38px;
+  }
+  .keyboard-lab__desktop { position: absolute; inset: 0; }
+  .keyboard-lab__mobile { display: none; }
+
+  @media (max-width: 900px) {
+    .keyboard-lab {
+      min-height: auto;
+      padding: calc(var(--nav-h) + 42px) var(--pad-x) 72px;
+    }
+    .keyboard-lab__title { font-size: clamp(54px, 14vw, 88px); }
+    .keyboard-lab__stage { height: auto; margin-top: 34px; }
+    .keyboard-lab__desktop { display: none; }
+    .keyboard-lab__mobile { display: block; }
   }
 
   /* ═══════════ BUILD ═══════════ */

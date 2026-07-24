@@ -59,9 +59,16 @@ function KeyboardCanvas({ variant, active, onCreated }: { variant: 'homepage' | 
         shadow-camera-bottom={PRODUCT_SHOT.shadows.directional.bottom}
         shadow-bias={-0.0008}
       />
-      <directionalLight {...PRODUCT_SHOT.lights.purpleRim} />
+      <directionalLight {...PRODUCT_SHOT.lights.redRim} />
       <directionalLight {...PRODUCT_SHOT.lights.warmFill} />
-      <pointLight name="product-shot-underpool" position={[0, 0.35, -1.8]} intensity={1.15} distance={10} decay={2} color={PRODUCT_SHOT.palette.purpleLight} />
+      <pointLight
+        name="product-shot-underpool"
+        position={[0, 0.28, -0.8]}
+        intensity={0.9}
+        distance={11}
+        decay={2}
+        color={PRODUCT_SHOT.palette.redLight}
+      />
       <mesh
         name="product-shot-desk"
         position={[0, PRODUCT_SHOT.desk.topY - PRODUCT_SHOT.desk.thickness / 2, 0]}
@@ -84,7 +91,7 @@ function KeyboardCanvas({ variant, active, onCreated }: { variant: 'homepage' | 
         far={4.5}
         color="#171126"
       />
-      <Environment preset="studio" environmentIntensity={0.35} />
+      <Environment preset="studio" environmentIntensity={0.72} />
       <group position={PRODUCT_SHOT.keyboard.position} rotation={[0, PRODUCT_SHOT.keyboard.rotationY, 0]}>
         <Keyboard reducedMotion={reducedMotion} active={active} />
       </group>

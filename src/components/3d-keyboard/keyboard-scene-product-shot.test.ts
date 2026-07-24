@@ -13,7 +13,7 @@ describe('keyboard product-shot scene structure', () => {
     expect(sceneSource).toContain('name="product-shot-desk"');
     expect(sceneSource).toContain('PRODUCT_SHOT.desk');
     expect(sceneSource).toContain('PRODUCT_SHOT.lights.coolKey');
-    expect(sceneSource).toContain('PRODUCT_SHOT.lights.purpleRim');
+    expect(sceneSource).toContain('PRODUCT_SHOT.lights.redRim');
     expect(sceneSource).toContain('PRODUCT_SHOT.lights.warmFill');
     expect(sceneSource).toContain('name="product-shot-underpool"');
     expect(sceneSource).toMatch(/<ContactShadows\s/);

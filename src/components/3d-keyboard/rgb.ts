@@ -15,17 +15,17 @@ export interface RgbOptions {
   pulse: ({ startedAt?: number } & RgbKeyPosition) | null;
 }
 
-const STATIC_LEFT = new Color('#8b5cf6');
-const STATIC_RIGHT = new Color('#ec4899');
-const RIPPLE_BASE = new Color('#160b2d');
-const RIPPLE_RING = new Color().setHSL(0.88, 0.9, 0.68);
+const STATIC_LEFT = new Color('#b80020');
+const STATIC_RIGHT = new Color('#ff3150');
+const RIPPLE_BASE = new Color('#230006');
+const RIPPLE_RING = new Color('#ff3454');
 
 const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
 const wrapUnit = (value: number) => ((value % 1) + 1) % 1;
 const finiteOr = (value: number, fallback: number) => (Number.isFinite(value) ? value : fallback);
 
 function staticColor(x: number): Color {
-  const normalizedX = clamp((x + 7) / 16.5, 0, 1);
+  const normalizedX = clamp((x + 9.5) / 19, 0, 1);
   return STATIC_LEFT.clone().lerp(STATIC_RIGHT, normalizedX);
 }
 

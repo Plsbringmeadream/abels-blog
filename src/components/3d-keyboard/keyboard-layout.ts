@@ -1,5 +1,17 @@
 import { PRODUCT_SHOT } from './keyboard-product-shot';
+
 export { KEYBOARD_CASE_WIDTH, KEYBOARD_PLATE_WIDTH } from './keyboard-geometry';
+
+export type KeyVariant =
+  | 'standard'
+  | 'creature'
+  | 'gamepad'
+  | 'anime-red'
+  | 'anime-blue'
+  | 'anime-purple'
+  | 'anime-mint'
+  | 'etched-enter'
+  | 'space-art';
 
 export interface KeyDef {
   readonly code: string;
@@ -10,63 +22,166 @@ export interface KeyDef {
   readonly d?: number;
   readonly color?: string;
   readonly row?: number;
+  readonly variant?: KeyVariant;
 }
 
-const { whiteCap, grayCap, redAccent } = PRODUCT_SHOT.palette;
+const { blackCap, graphiteCap } = PRODUCT_SHOT.palette;
+const alpha = graphiteCap;
+const modifier = blackCap;
 
-export const KEYCAP_FOOTPRINT_SCALE = 0.88;
+export const KEYCAP_FOOTPRINT_SCALE = 0.87;
+
+const functionKeys = [
+  { code: 'Escape', label: '', x: -9, z: -3.55, color: modifier, row: 1, variant: 'creature' },
+  ...['F1', 'F2', 'F3', 'F4'].map((label, index) => ({
+    code: label,
+    label,
+    x: -7.5 + index,
+    z: -3.55,
+    color: modifier,
+    row: 1,
+  })),
+  ...['F5', 'F6', 'F7', 'F8'].map((label, index) => ({
+    code: label,
+    label,
+    x: -3 + index,
+    z: -3.55,
+    color: modifier,
+    row: 1,
+  })),
+  ...['F9', 'F10', 'F11', 'F12'].map((label, index) => ({
+    code: label,
+    label,
+    x: 1.5 + index,
+    z: -3.55,
+    color: modifier,
+    row: 1,
+  })),
+  { code: 'F13', label: '', x: 5.75, z: -3.55, color: modifier, row: 1, variant: 'gamepad' },
+] as const satisfies readonly KeyDef[];
+
+const numberRow = [
+  { code: 'Backquote', label: '~', x: -9, z: -2.2, color: modifier, row: 2 },
+  ...'1234567890'.split('').map((label, index) => ({
+    code: `Digit${label}`,
+    label,
+    x: -8 + index,
+    z: -2.2,
+    color: alpha,
+    row: 2,
+  })),
+  { code: 'Minus', label: '-', x: 2, z: -2.2, color: alpha, row: 2 },
+  { code: 'Equal', label: '=', x: 3, z: -2.2, color: alpha, row: 2 },
+  { code: 'Backspace', label: 'Backspace', x: 4.5, z: -2.2, w: 2, color: modifier, row: 2 },
+] as const satisfies readonly KeyDef[];
+
+const qwertyRow = [
+  { code: 'Tab', label: 'Tab', x: -8.75, z: -1, w: 1.5, color: modifier, row: 3 },
+  ...'QWERTYUIOP'.split('').map((label, index) => ({
+    code: `Key${label}`,
+    label: index < 4 ? '' : label,
+    x: -7.5 + index,
+    z: -1,
+    color: alpha,
+    row: 3,
+    variant: (['anime-red', 'anime-blue', 'anime-purple', 'anime-mint'][index] ??
+      'standard') as KeyVariant,
+  })),
+  { code: 'BracketLeft', label: '[', x: 2.5, z: -1, color: alpha, row: 3 },
+  { code: 'BracketRight', label: ']', x: 3.5, z: -1, color: alpha, row: 3 },
+  { code: 'Backslash', label: '\\', x: 4.75, z: -1, w: 1.5, color: modifier, row: 3 },
+] as const satisfies readonly KeyDef[];
+
+const homeRow = [
+  { code: 'CapsLock', label: 'Caps Lock', x: -8.625, z: 0.2, w: 1.75, color: modifier, row: 4 },
+  ...'ASDFGHJKL'.split('').map((label, index) => ({
+    code: `Key${label}`,
+    label,
+    x: -7.25 + index,
+    z: 0.2,
+    color: alpha,
+    row: 4,
+  })),
+  { code: 'Semicolon', label: ';', x: 1.75, z: 0.2, color: alpha, row: 4 },
+  { code: 'Quote', label: "'", x: 2.75, z: 0.2, color: alpha, row: 4 },
+  {
+    code: 'Enter',
+    label: '',
+    x: 4.375,
+    z: 0.2,
+    w: 2.25,
+    color: modifier,
+    row: 4,
+    variant: 'etched-enter',
+  },
+] as const satisfies readonly KeyDef[];
+
+const shiftRow = [
+  { code: 'ShiftLeft', label: 'Shift', x: -8.375, z: 1.4, w: 2.25, color: modifier, row: 5 },
+  ...'ZXCVBNM'.split('').map((label, index) => ({
+    code: `Key${label}`,
+    label,
+    x: -6.75 + index,
+    z: 1.4,
+    color: alpha,
+    row: 5,
+  })),
+  { code: 'Comma', label: ',', x: 0.25, z: 1.4, color: alpha, row: 5 },
+  { code: 'Period', label: '.', x: 1.25, z: 1.4, color: alpha, row: 5 },
+  { code: 'Slash', label: '/', x: 2.25, z: 1.4, color: alpha, row: 5 },
+  { code: 'ShiftRight', label: 'Shift', x: 4.25, z: 1.4, w: 2.5, color: modifier, row: 5 },
+] as const satisfies readonly KeyDef[];
+
+const bottomRow = [
+  { code: 'ControlLeft', label: 'Control', x: -8.875, z: 2.6, w: 1.25, color: modifier, row: 5 },
+  { code: 'MetaLeft', label: 'Super', x: -7.625, z: 2.6, w: 1.25, color: modifier, row: 5 },
+  { code: 'AltLeft', label: 'Alt', x: -6.375, z: 2.6, w: 1.25, color: modifier, row: 5 },
+  {
+    code: 'Space',
+    label: '',
+    x: -2.625,
+    z: 2.6,
+    w: 6.25,
+    color: modifier,
+    row: 5,
+    variant: 'space-art',
+  },
+  { code: 'AltRight', label: 'Alt', x: 1.125, z: 2.6, w: 1.25, color: modifier, row: 5 },
+  { code: 'Fn', label: 'Fn', x: 2.375, z: 2.6, w: 1.25, color: modifier, row: 5 },
+  { code: 'ContextMenu', label: 'Menu', x: 3.625, z: 2.6, w: 1.25, color: modifier, row: 5 },
+  { code: 'ControlRight', label: 'Control', x: 5.125, z: 2.6, w: 1.75, color: modifier, row: 5 },
+] as const satisfies readonly KeyDef[];
 
 export const KEYS = [
-  { code: 'Escape', label: 'Esc', x: -6.8, z: -2.4, w: 1.2, color: redAccent, row: 1 },
-  { code: 'Digit1', label: '1', x: -5.3, z: -2.4, color: whiteCap, row: 1 },
-  { code: 'Digit2', label: '2', x: -4.3, z: -2.4, color: whiteCap, row: 1 },
-  { code: 'Digit3', label: '3', x: -3.3, z: -2.4, color: whiteCap, row: 1 },
-  { code: 'Digit4', label: '4', x: -2.3, z: -2.4, color: whiteCap, row: 1 },
-  { code: 'Digit5', label: '5', x: -1.3, z: -2.4, color: whiteCap, row: 1 },
-  { code: 'Digit6', label: '6', x: -0.3, z: -2.4, color: whiteCap, row: 1 },
-  { code: 'Digit7', label: '7', x: 0.7, z: -2.4, color: whiteCap, row: 1 },
-  { code: 'Digit8', label: '8', x: 1.7, z: -2.4, color: whiteCap, row: 1 },
-  { code: 'Digit9', label: '9', x: 2.7, z: -2.4, color: whiteCap, row: 1 },
-  { code: 'Digit0', label: '0', x: 3.7, z: -2.4, color: whiteCap, row: 1 },
-  { code: 'Minus', label: '-', x: 4.7, z: -2.4, color: whiteCap, row: 1 },
-  { code: 'Equal', label: '=', x: 5.7, z: -2.4, color: whiteCap, row: 1 },
-  { code: 'Backspace', label: 'Bksp', x: 7.0, z: -2.4, w: 1.6, color: grayCap, row: 1 },
+  ...functionKeys,
+  ...numberRow,
+  ...qwertyRow,
+  ...homeRow,
+  ...shiftRow,
+  ...bottomRow,
+] as const satisfies readonly KeyDef[];
 
-  { code: 'Tab', label: 'Tab', x: -6.65, z: -1.2, w: 1.4, color: grayCap, row: 2 },
-  ...'QWERTYUIOP'.split('').map((label, index) => ({ code: `Key${label}`, label, x: -4.95 + index, z: -1.2, color: whiteCap, row: 2 })),
-  { code: 'BracketLeft', label: '[', x: 5.05, z: -1.2, color: whiteCap, row: 2 },
-  { code: 'BracketRight', label: ']', x: 6.05, z: -1.2, color: whiteCap, row: 2 },
-  { code: 'Backslash', label: '\\', x: 7.15, z: -1.2, w: 1.3, color: grayCap, row: 2 },
-
-  { code: 'CapsLock', label: 'Caps', x: -6.75, z: 0, w: 1.6, color: grayCap, row: 3 },
-  ...'ASDFGHJKL'.split('').map((label, index) => ({ code: `Key${label}`, label, x: -4.85 + index, z: 0, color: whiteCap, row: 3 })),
-  { code: 'Semicolon', label: ';', x: 4.15, z: 0, color: whiteCap, row: 3 },
-  { code: 'Quote', label: "'", x: 5.15, z: 0, color: whiteCap, row: 3 },
-  { code: 'Enter', label: 'Enter', x: 6.6, z: 0, w: 2.0, color: redAccent, row: 3 },
-
-  { code: 'ShiftLeft', label: 'Shift', x: -7.0, z: 1.2, w: 2.2, color: grayCap, row: 4 },
-  ...'ZXCVBNM'.split('').map((label, index) => ({ code: `Key${label}`, label, x: -4.5 + index, z: 1.2, color: whiteCap, row: 4 })),
-  { code: 'Comma', label: ',', x: 2.5, z: 1.2, color: whiteCap, row: 4 },
-  { code: 'Period', label: '.', x: 3.5, z: 1.2, color: whiteCap, row: 4 },
-  { code: 'Slash', label: '/', x: 4.5, z: 1.2, color: whiteCap, row: 4 },
-  { code: 'ShiftRight', label: 'Shift', x: 6.1, z: 1.2, w: 2.4, color: grayCap, row: 4 },
-
-  { code: 'ControlLeft', label: 'Ctrl', x: -6.8, z: 2.4, w: 1.3, color: grayCap, row: 5 },
-  { code: 'MetaLeft', label: 'Win', x: -5.3, z: 2.4, w: 1.3, color: grayCap, row: 5 },
-  { code: 'AltLeft', label: 'Alt', x: -3.8, z: 2.4, w: 1.3, color: grayCap, row: 5 },
-  { code: 'Space', label: '', x: 0, z: 2.4, w: 5.6, color: whiteCap, row: 5 },
-  { code: 'AltRight', label: 'Alt', x: 4.3, z: 2.4, w: 1.3, color: grayCap, row: 5 },
-  { code: 'MetaRight', label: 'Win', x: 5.8, z: 2.4, w: 1.3, color: grayCap, row: 5 },
-  { code: 'ControlRight', label: 'Ctrl', x: 7.3, z: 2.4, w: 1.3, color: grayCap, row: 5 },
+export const NAVIGATION_KEYS = [
+  { code: 'PrintScreen', label: 'Print', x: 7.25, z: -3.55, color: modifier, row: 1 },
+  { code: 'ScrollLock', label: 'Scroll', x: 8.25, z: -3.55, color: modifier, row: 1 },
+  { code: 'Pause', label: 'Pause', x: 9.25, z: -3.55, color: modifier, row: 1 },
+  { code: 'Insert', label: 'Insert', x: 7.25, z: -2.2, color: modifier, row: 2 },
+  { code: 'Home', label: 'Home', x: 8.25, z: -2.2, color: modifier, row: 2 },
+  { code: 'PageUp', label: 'PgUp', x: 9.25, z: -2.2, color: modifier, row: 2 },
+  { code: 'Delete', label: 'Delete', x: 7.25, z: -1, color: modifier, row: 3 },
+  { code: 'End', label: 'End', x: 8.25, z: -1, color: modifier, row: 3 },
+  { code: 'PageDown', label: 'PgDn', x: 9.25, z: -1, color: modifier, row: 3 },
 ] as const satisfies readonly KeyDef[];
 
 export const ARROWS = [
-  { code: 'ArrowUp', label: '↑', x: 8.25, z: 0.2, color: grayCap, row: 3 },
-  { code: 'ArrowLeft', label: '←', x: 7.0, z: 1.4, color: grayCap, row: 4 },
-  { code: 'ArrowDown', label: '↓', x: 8.25, z: 1.4, color: grayCap, row: 4 },
-  { code: 'ArrowRight', label: '→', x: 9.5, z: 1.4, color: grayCap, row: 4 },
+  { code: 'ArrowUp', label: '↑', x: 8.25, z: 1.4, color: modifier, row: 5 },
+  { code: 'ArrowLeft', label: '←', x: 7.25, z: 2.6, color: modifier, row: 5 },
+  { code: 'ArrowDown', label: '↓', x: 8.25, z: 2.6, color: modifier, row: 5 },
+  { code: 'ArrowRight', label: '→', x: 9.25, z: 2.6, color: modifier, row: 5 },
 ] as const satisfies readonly KeyDef[];
 
+export const ALL_KEYS = [...KEYS, ...NAVIGATION_KEYS, ...ARROWS] as const;
+
 export const KEY_BY_CODE: ReadonlyMap<string, Readonly<KeyDef>> = new Map(
-  [...KEYS, ...ARROWS].map((key) => [key.code, key]),
+  ALL_KEYS.map((key) => [key.code, key]),
 );

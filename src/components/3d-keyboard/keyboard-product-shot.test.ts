@@ -55,7 +55,7 @@ describe('keyboard product-shot configuration', () => {
     );
 
     expectFiniteVector3(keyboard.position);
-    expect(keyboard.rotationY).toBeCloseTo(-0.08, 8);
+    expect(keyboard.rotationY).toBeCloseTo(-0.065, 8);
     expect(keyboard.clearance).toBeGreaterThanOrEqual(0.01);
     expect(keyboard.clearance).toBeLessThanOrEqual(0.03);
     expect(minY - desk.topY).toBeCloseTo(keyboard.clearance, 8);
@@ -106,20 +106,23 @@ describe('keyboard product-shot configuration', () => {
 
   it('provides the complete product palette using valid hex colors', () => {
     expect(Object.keys(PRODUCT_SHOT.palette).sort()).toEqual([
+      'blackCap',
+      'blackCase',
+      'blackFrame',
+      'creamAccent',
       'darkPlate',
-      'grayCap',
-      'purpleLight',
-      'redAccent',
-      'silverCase',
-      'silverFrame',
-      'whiteCap',
+      'graphiteCap',
+      'magentaAccent',
+      'mirrorMetal',
+      'redLight',
+      'silverAccent',
     ]);
 
     Object.values(PRODUCT_SHOT.palette).forEach((color) => expect(color).toMatch(HEX_COLOR));
   });
 
-  it('defines cool key, purple rim, and warm fill lights with finite values', () => {
-    expect(Object.keys(PRODUCT_SHOT.lights).sort()).toEqual(['coolKey', 'purpleRim', 'warmFill']);
+  it('defines cool key, red rim, and warm fill lights with finite values', () => {
+    expect(Object.keys(PRODUCT_SHOT.lights).sort()).toEqual(['coolKey', 'redRim', 'warmFill']);
 
     Object.values(PRODUCT_SHOT.lights).forEach((light) => {
       expectFiniteVector3(light.position);
