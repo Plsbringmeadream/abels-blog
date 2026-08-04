@@ -99,7 +99,7 @@ const UNPLACED_KEYBOARD_MIN_Y = computeTiltedKeyboardMinY(0, KEYBOARD_TILT_X, KE
 export const PRODUCT_SHOT = Object.freeze({
   homepage: Object.freeze({
     camera: Object.freeze({
-      position: vector3(24.4, 7.25, 30.2),
+      position: vector3(21.4, 6.35, 26.5),
       target: vector3(0, -0.02, 0.3),
       fov: 31,
       referenceAspect: 1.5,

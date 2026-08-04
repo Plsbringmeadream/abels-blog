@@ -1,4 +1,4 @@
-import { Text } from '@react-three/drei';
+import { Text, useGLTF, useTexture } from '@react-three/drei';
 import { useFrame, useThree } from '@react-three/fiber';
 import { useEffect, useMemo, useRef } from 'react';
 import * as THREE from 'three';
@@ -8,8 +8,11 @@ import type { RgbMode } from './keyboard-state';
 import { keySpringIsMoving, stepKeySpringInPlace, type KeySpringState } from './keyboard-spring';
 import { keyboardAnimationTime } from './keyboard-render-policy';
 import { PRODUCT_SHOT } from './keyboard-product-shot';
-import { KEYCAP_FOOTPRINT_SCALE, type KeyVariant } from './keyboard-layout';
-import SpecialKeycapDetails, { specialKeycapColor } from './SpecialKeycapDetails';
+import { keycapFootprint, type KeyVariant } from './keyboard-layout';
+import SpecialKeycapDetails, {
+  keycapArtworkCell,
+  specialKeycapColor,
+} from './SpecialKeycapDetails';
 
 export interface KeyboardRgbRuntime {
   enabled: boolean;
@@ -50,17 +53,31 @@ const STEM_GEOMETRY = new THREE.BoxGeometry(0.2, 0.15, 0.2);
 const STEM_MATERIAL = new THREE.MeshStandardMaterial({
   color: PRODUCT_SHOT.palette.darkPlate, metalness: 0.04, roughness: 0.68,
 });
+const ENGRAVED_METAL_MATERIAL = new THREE.MeshPhysicalMaterial({
+  color: '#858b91',
+  metalness: 0.96,
+  roughness: 0.27,
+  clearcoat: 0.12,
+  clearcoatRoughness: 0.24,
+  envMapIntensity: 1.15,
+});
+const SCULPT_HIT_MATERIAL = new THREE.MeshBasicMaterial({
+  transparent: true,
+  opacity: 0,
+  depthWrite: false,
+  colorWrite: false,
+});
 const STATIC_LEFT = new THREE.Color('#b80020');
 const STATIC_RIGHT = new THREE.Color('#ff3150');
 const RIPPLE_BASE = new THREE.Color('#230006');
 const RIPPLE_RING = new THREE.Color('#ff3454');
 
 export const CHERRY_PROFILES = Object.freeze({
-  1: Object.freeze({ height: 0.62, angle: 0.105, dish: 0.058 }),
-  2: Object.freeze({ height: 0.58, angle: 0.075, dish: 0.055 }),
-  3: Object.freeze({ height: 0.54, angle: 0.018, dish: 0.052 }),
-  4: Object.freeze({ height: 0.5, angle: -0.045, dish: 0.05 }),
-  5: Object.freeze({ height: 0.52, angle: -0.085, dish: 0.048 }),
+  1: Object.freeze({ height: 9.818 / 19, angle: 0.095, dish: 0.038 }),
+  2: Object.freeze({ height: 9.818 / 19, angle: 0.065, dish: 0.036 }),
+  3: Object.freeze({ height: 7.874 / 19, angle: 0.015, dish: 0.034 }),
+  4: Object.freeze({ height: 7.341 / 19, angle: -0.04, dish: 0.032 }),
+  5: Object.freeze({ height: 8.584 / 19, angle: -0.075, dish: 0.032 }),
 });
 
 function cherryProfile(row: number) {
@@ -76,23 +93,62 @@ export function keycapLegendColor(capColor: string): string {
   return darkCaps.includes(capColor.toLowerCase()) ? '#f1f0ec' : '#25272c';
 }
 
-function keycapGeometry(width: number, depth: number, height: number, dish: number): THREE.BufferGeometry {
-  const cacheKey = `${width}/${depth}/${height}/${dish}`;
+export const KEYCAP_TOP_INSET = 0.15;
+
+export function isFullSculptKeycapVariant(variant: KeyVariant): boolean {
+  return variant === 'creature' || variant === 'gamepad';
+}
+
+export function cherryCadMeshName(row: number, width: number): string {
+  const normalizedRow = Math.min(5, Math.max(1, row));
+  const supportedWidths: Readonly<Record<number, readonly number[]>> = {
+    1: [1],
+    2: [1, 2],
+    3: [1, 1.5],
+    4: [1, 1.75, 2.25],
+    5: [1, 1.25, 1.75, 2.25, 2.75, 6.25],
+  };
+  const resolvedWidth = supportedWidths[normalizedRow]?.includes(width) ? width : 1;
+  return `r${normalizedRow}_${String(resolvedWidth).replace('.', '_')}u`;
+}
+
+export function keycapLegendFontSize(label: string, width: number): number {
+  if (label.includes('\n')) return 0.145;
+  if (label.length <= 2) return 0.19;
+  if (label.length <= 4) return 0.155;
+  if (width >= 1.5) return 0.135;
+  return 0.12;
+}
+
+function keycapGeometry(
+  width: number,
+  depth: number,
+  height: number,
+  dish: number,
+  angle: number,
+): THREE.BufferGeometry {
+  const cacheKey = `${width}/${depth}/${height}/${dish}/${angle}`;
   const cached = keycapGeometries.get(cacheKey);
   if (cached) return cached;
 
-  const w = width * KEYCAP_FOOTPRINT_SCALE;
-  const d = depth * KEYCAP_FOOTPRINT_SCALE;
-  const geometry = new RoundedBoxGeometry(w, height, d, 7, Math.min(0.045, w * 0.045, d * 0.045));
+  const w = keycapFootprint(width);
+  const d = keycapFootprint(depth);
+  const geometry = new RoundedBoxGeometry(w, height, d, 8, Math.min(0.055, w * 0.06, d * 0.06));
   const positions = geometry.attributes.position;
   const vertex = new THREE.Vector3();
   for (let index = 0; index < positions.count; index += 1) {
     vertex.fromBufferAttribute(positions, index);
     const vertical = THREE.MathUtils.clamp((vertex.y + height / 2) / height, 0, 1);
-    const taperX = 1 - vertical * 0.135;
-    const taperZ = 1 - vertical * 0.105;
+    // A Cherry cap has a near-vertical lower skirt, then a more pronounced
+    // shoulder taper toward the smaller sculpted top surface.
+    const shoulder = THREE.MathUtils.smoothstep(vertical, 0.12, 0.92);
+    // The shoulder inset is a fixed physical amount. Percentage tapering
+    // incorrectly shortens wide keys such as Space, Shift and Enter.
+    const taperX = 1 - (shoulder * KEYCAP_TOP_INSET) / w;
+    const taperZ = 1 - (shoulder * KEYCAP_TOP_INSET) / d;
     vertex.x *= taperX;
     vertex.z *= taperZ;
+    vertex.y += Math.tan(angle) * vertex.z * shoulder;
 
     if (vertex.y > height * 0.34) {
       const nx = THREE.MathUtils.clamp(vertex.x / (w * 0.43), -1, 1);
@@ -131,6 +187,62 @@ function keycapMaterial(color: string): THREE.MeshPhysicalMaterial {
   });
   keycapMaterials.set(color, material);
   return material;
+}
+
+function artworkGeometry(source: THREE.BufferGeometry): THREE.BufferGeometry {
+  const geometry = source.clone();
+  geometry.computeBoundingBox();
+  const bounds = geometry.boundingBox;
+  const positions = geometry.attributes.position;
+  if (!bounds || !positions) return geometry;
+
+  const uvs = new Float32Array(positions.count * 2);
+  const width = Math.max(0.001, bounds.max.x - bounds.min.x);
+  const depth = Math.max(0.001, bounds.max.z - bounds.min.z);
+
+  for (let index = 0; index < positions.count; index += 1) {
+    const x = positions.getX(index);
+    const z = positions.getZ(index);
+    const u = (x - bounds.min.x) / width;
+    // Image top points toward the keyboard's rear (-Z).
+    const v = (bounds.max.z - z) / depth;
+    uvs[index * 2] = u;
+    uvs[index * 2 + 1] = v;
+  }
+  geometry.setAttribute('uv', new THREE.BufferAttribute(uvs, 2));
+  return geometry;
+}
+
+function artworkTexture(
+  source: THREE.Texture,
+  cell: readonly [number, number],
+  integrated = false,
+): THREE.Texture {
+  const [column, row] = cell;
+  const texture = source.clone();
+  texture.colorSpace = THREE.SRGBColorSpace;
+  texture.wrapS = THREE.ClampToEdgeWrapping;
+  texture.wrapT = THREE.ClampToEdgeWrapping;
+  if (!integrated) {
+    const columnOffsets = [0.013, 0.34, 0.669] as const;
+    texture.repeat.set(0.315, 0.475);
+    texture.offset.set(columnOffsets[column], row === 1 ? 0.51 : 0.015);
+  }
+  texture.anisotropy = 8;
+  texture.needsUpdate = true;
+  return texture;
+}
+
+function artworkMaterial(texture: THREE.Texture): THREE.MeshPhysicalMaterial {
+  return new THREE.MeshPhysicalMaterial({
+    color: '#ffffff',
+    map: texture,
+    metalness: 0,
+    roughness: 0.66,
+    clearcoat: 0.015,
+    clearcoatRoughness: 0.9,
+    envMapIntensity: 0.25,
+  });
 }
 
 function updateRgbColor(
@@ -196,13 +308,42 @@ export default function Keycap({
   const invalidate = useThree((state) => state.invalidate);
   const profile = cherryProfile(row);
   const rowHeight = profile.height;
-  const geometry = useMemo(
-    () => keycapGeometry(width, depth, rowHeight, profile.dish),
-    [width, depth, rowHeight, profile.dish],
+  const atlas = useTexture('/keycap-art/custom-keycap-atlas.png');
+  const spaceArtwork = useTexture('/keycap-art/space-art-integrated.webp');
+  const cadModel = useGLTF('/models/cherry-profile-pbt.glb') as unknown as {
+    nodes: Readonly<Record<string, THREE.Mesh>>;
+  };
+  const fallbackGeometry = useMemo(
+    () => keycapGeometry(width, depth, rowHeight, profile.dish, profile.angle),
+    [width, depth, rowHeight, profile.dish, profile.angle],
   );
+  const baseGeometry = cadModel.nodes[cherryCadMeshName(row, width)]?.geometry ?? fallbackGeometry;
   const glowGeometry = useMemo(() => underlightGeometry(width, depth), [width, depth]);
   const renderedColor = specialKeycapColor(variant, color);
-  const capMaterial = useMemo(() => keycapMaterial(renderedColor), [renderedColor]);
+  const isFullSculpt = isFullSculptKeycapVariant(variant);
+  const artworkCell = keycapArtworkCell(variant);
+  const geometry = useMemo(
+    () => artworkCell ? artworkGeometry(baseGeometry) : baseGeometry,
+    [artworkCell, baseGeometry],
+  );
+  const mappedTexture = useMemo(
+    () => artworkCell
+      ? artworkTexture(
+          variant === 'space-art' ? spaceArtwork : atlas,
+          artworkCell,
+          variant === 'space-art',
+        )
+      : undefined,
+    [artworkCell, atlas, spaceArtwork, variant],
+  );
+  const capMaterial = useMemo(
+    () => {
+      if (mappedTexture) return artworkMaterial(mappedTexture);
+      if (variant === 'etched-enter') return ENGRAVED_METAL_MATERIAL;
+      return keycapMaterial(renderedColor);
+    },
+    [mappedTexture, renderedColor, variant],
+  );
 
   const releasePointer = (releaseCapture: boolean) => {
     const target = captureTarget.current;
@@ -252,10 +393,7 @@ export default function Keycap({
   });
 
   return (
-    <group
-      position={position}
-      rotation={[profile.angle, 0, 0]}
-    >
+    <group position={position}>
       <mesh geometry={glowGeometry} position={[0, -rowHeight * 0.5 - 0.01, 0]}>
         <meshBasicMaterial ref={glowMaterial} color="#000000" toneMapped={false} transparent opacity={0.82} />
       </mesh>
@@ -264,9 +402,9 @@ export default function Keycap({
         <mesh geometry={STEM_GEOMETRY} material={STEM_MATERIAL} position={[0, -rowHeight * 0.5 - 0.02, 0]} />
         <mesh
           geometry={geometry}
-          material={capMaterial}
-          castShadow
-          receiveShadow
+          material={isFullSculpt ? SCULPT_HIT_MATERIAL : capMaterial}
+          castShadow={!isFullSculpt}
+          receiveShadow={!isFullSculpt}
           onPointerDown={(event) => {
             event.stopPropagation();
             if (pointerActive.current) return;
@@ -282,11 +420,13 @@ export default function Keycap({
           onPointerLeave={(event) => { event.stopPropagation(); releasePointer(true); }}
         />
 
-        {label && (
+        {label && !isFullSculpt && (
           <Text
-            position={[0, rowHeight * 0.5 + 0.012, 0]}
-            rotation={[-Math.PI / 2, 0, 0]}
-            fontSize={width > 1.2 ? 0.1 : 0.1}
+            position={[0, rowHeight * 0.5 + 0.018, 0]}
+            rotation={[-Math.PI / 2 + profile.angle, 0, 0]}
+            fontSize={keycapLegendFontSize(label, width)}
+            lineHeight={0.8}
+            letterSpacing={-0.025}
             color={keycapLegendColor(renderedColor)}
             anchorX="center"
             anchorY="middle"
@@ -295,8 +435,12 @@ export default function Keycap({
             {label}
           </Text>
         )}
-        <SpecialKeycapDetails variant={variant} width={width} height={rowHeight} />
+        <group rotation={[profile.angle, 0, 0]}>
+          <SpecialKeycapDetails variant={variant} width={width} height={rowHeight} />
+        </group>
       </group>
     </group>
   );
 }
+
+useGLTF.preload('/models/cherry-profile-pbt.glb');

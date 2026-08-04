@@ -17,6 +17,10 @@ pnpm-debug.log*
 .env
 .env.production
 
+# local Vercel project metadata and device-login scratch files
+.vercel/
+.vercel-login.*
+
 # macOS-specific files
 .DS_Store
 
