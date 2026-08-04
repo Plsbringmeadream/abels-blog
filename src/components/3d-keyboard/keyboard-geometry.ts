@@ -1,6 +1,6 @@
-export const KEYBOARD_CASE_WIDTH = 21.6;
-export const KEYBOARD_CASE_DEPTH = 8.25;
-export const KEYBOARD_PLATE_WIDTH = 21.12;
+export const KEYBOARD_CASE_WIDTH = 20.35;
+export const KEYBOARD_CASE_DEPTH = 6.9;
+export const KEYBOARD_PLATE_WIDTH = 19.95;
 export const KEYBOARD_BASE_GROUP_Y = -0.22;
 
 export const KEYBOARD_FRONT_LIP = Object.freeze({

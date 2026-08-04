@@ -6,8 +6,16 @@ import { ALL_KEYS, KEY_BY_CODE } from './keyboard-layout';
 import { useKeyboardExperience } from './KeyboardExperience';
 import { PRODUCT_SHOT } from './keyboard-product-shot';
 
-// Physical Cherry sculpt: tall rear rows, neutral home row, kicked-up bottom row.
-const ROW_Y = [0, 0.43, 0.38, 0.33, 0.3, 0.3] as const;
+// Keep every lower skirt seated at the same plate height; the sculpt comes
+// from the cap shoulder/top rather than rotating or floating the whole cap.
+const ROW_Y = [
+  0,
+  0.15 + (9.818 / 19) / 2,
+  0.15 + (9.818 / 19) / 2,
+  0.15 + (7.874 / 19) / 2,
+  0.15 + (7.341 / 19) / 2,
+  0.15 + (8.584 / 19) / 2,
+] as const;
 
 export default function Keyboard({ reducedMotion = false, active = true }: { reducedMotion?: boolean; active?: boolean }) {
   const defaultColor = PRODUCT_SHOT.palette.graphiteCap;
