@@ -1,76 +1,92 @@
-# Astro Starter Kit: Blog
+# Abel's Blog
 
-```sh
-npm create astro@latest -- --template blog
+Abel 的个人网站，用来记录生活、分享热爱，以及持续公开构建中的技术实验。
+
+线上访问：[abels-blog.vercel.app](https://abels-blog.vercel.app)
+
+## 网站内容
+
+- 技术文章与项目复盘
+- AI 工具、自动化和独立开发笔记
+- Markdown / MDX 博客与标签归档
+- RSS、站点地图和搜索
+- 可交互的 Three.js 3D 机械键盘
+
+## 3D 键盘
+
+首页的键盘实验室根据正在使用的黑色 TKL 机械键盘重建，支持鼠标和实体键盘交互。
+
+- 使用 Cherry-profile CAD 外壳还原键帽高度、梯形轮廓和行间雕刻曲线
+- 按 19 mm 标准节距重建 TKL 布局及多倍键宽
+- 金属机身与镜面 PVD 风格材质
+- 金属雕刻 Enter、半透明树脂 Esc 和 F13 个性键帽
+- 支持静态、呼吸、彩虹和涟漪 RGB 模式
+- 键盘按压动画、轴下灯光响应和亮度调节
+- 桌面端完整渲染，并针对低性能设备提供降级策略
+
+## 技术栈
+
+- [Astro](https://astro.build/)：静态站点、内容集合与页面构建
+- [React](https://react.dev/)：交互组件
+- [Three.js](https://threejs.org/)：3D 场景和材质渲染
+- [React Three Fiber](https://r3f.docs.pmnd.rs/) / [Drei](https://github.com/pmndrs/drei)：React 3D 组件
+- [MDX](https://mdxjs.com/)：博客内容
+- [Vitest](https://vitest.dev/)：组件、布局与几何测试
+- [Vercel](https://vercel.com/)：生产部署
+
+## 本地运行
+
+需要 Node.js 22.12 或更高版本。
+
+```bash
+git clone https://github.com/Plsbringmeadream/abels-blog.git
+cd abels-blog
+npm install
+npm run dev
 ```
 
-<!-- ASTRO:REMOVE:START -->
+开发服务器默认运行在 `http://localhost:4321`。
 
-[![Open in StackBlitz](https://developer.stackblitz.com/img/open_in_stackblitz.svg)](https://stackblitz.com/github/withastro/astro/tree/latest/examples/blog)
-[![Open with CodeSandbox](https://assets.codesandbox.io/github/button-edit-lime.svg)](https://codesandbox.io/p/sandbox/github/withastro/astro/tree/latest/examples/blog)
-[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/withastro/astro?devcontainer_path=.devcontainer/blog/devcontainer.json)
+## 常用命令
 
-<!-- ASTRO:REMOVE:END -->
+| 命令 | 用途 |
+| --- | --- |
+| `npm run dev` | 启动本地开发服务器 |
+| `npm test` | 运行测试 |
+| `npm run test:watch` | 监听文件并持续运行测试 |
+| `npm run build` | 构建生产版本到 `dist/` |
+| `npm run preview` | 本地预览生产构建 |
 
-> 🧑‍🚀 **Seasoned astronaut?** Delete this file. Have fun!
-
-<!-- ASTRO:REMOVE:START -->
-
-![blog](https://github.com/withastro/astro/assets/2244813/ff10799f-a816-4703-b967-c78997e8323d)
-
-<!-- ASTRO:REMOVE:END -->
-
-Features:
-
-- ✅ Minimal styling (make it your own!)
-- ✅ 100/100 Lighthouse performance
-- ✅ SEO-friendly with canonical URLs and Open Graph data
-- ✅ Sitemap support
-- ✅ RSS Feed support
-- ✅ Markdown & MDX support
-
-## 🚀 Project Structure
-
-Inside of your Astro project, you'll see the following folders and files:
+## 项目结构
 
 ```text
-├── public/
-├── src/
-│   ├── components/
-│   ├── content/
-│   ├── layouts/
-│   └── pages/
-├── astro.config.mjs
-├── README.md
-├── package.json
-└── tsconfig.json
+public/
+  keycap-art/       # 个性键帽与雕刻纹理
+  models/           # Cherry-profile GLB 模型
+scripts/            # 模型与纹理生成脚本
+src/
+  components/
+    3d-keyboard/    # 3D 键盘场景、键帽、布局和交互
+  content/blog/     # Markdown / MDX 文章
+  layouts/          # 页面布局
+  pages/            # Astro 路由
 ```
 
-Astro looks for `.astro` or `.md` files in the `src/pages/` directory. Each page is exposed as a route based on its file name.
+## 验证
 
-There's nothing special about `src/components/`, but that's where we like to put any Astro/React/Vue/Svelte/Preact components.
+当前 3D 键盘实现包含布局、几何、交互、RGB 和渲染策略测试。提交前建议运行：
 
-The `src/content/` directory contains "collections" of related Markdown and MDX documents. Use `getCollection()` to retrieve posts from `src/content/blog/`, and type-check your frontmatter using an optional schema. See [Astro's Content Collections docs](https://docs.astro.build/en/guides/content-collections/) to learn more.
+```bash
+npm test -- --run
+npm run build
+```
 
-Any static assets, like images, can be placed in the `public/` directory.
+## 部署
 
-## 🧞 Commands
+项目部署在 Vercel。生产地址：
 
-All commands are run from the root of the project, from a terminal:
+[https://abels-blog.vercel.app](https://abels-blog.vercel.app)
 
-| Command                   | Action                                           |
-| :------------------------ | :----------------------------------------------- |
-| `npm install`             | Installs dependencies                            |
-| `npm run dev`             | Starts local dev server at `localhost:4321`      |
-| `npm run build`           | Build your production site to `./dist/`          |
-| `npm run preview`         | Preview your build locally, before deploying     |
-| `npm run astro ...`       | Run CLI commands like `astro add`, `astro check` |
-| `npm run astro -- --help` | Get help using the Astro CLI                     |
+---
 
-## 👀 Want to learn more?
-
-Check out [our documentation](https://docs.astro.build) or jump into our [Discord server](https://astro.build/chat).
-
-## Credit
-
-This theme is based off of the lovely [Bear Blog](https://github.com/HermanMartinus/bearblog/).
+Built with Astro, React and Three.js.
