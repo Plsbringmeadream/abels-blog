@@ -2,7 +2,7 @@
 title: 'AI Pulse：做了个 AI 资讯聚合站，顺便学会了给内容做审计'
 description: '用 Next.js 搭的 AI 行业资讯面板：热门话题、新闻、产品动态。最大的收获不是技术，是建立了一套内容真实性核查流程。'
 pubDate: 'Jun 19 2026'
-heroImage: '../../assets/hero-ai-pulse.gif'
+heroImage: '../../assets/hero-ai-pulse.webp'
 tags: ['nextjs', 'AI', '独立开发']
 ---
 
