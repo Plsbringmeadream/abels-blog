@@ -7,7 +7,7 @@ import { defineConfig } from 'astro/config';
 
 // https://astro.build/config
 export default defineConfig({
-	site: 'https://astro-blog-one-ochre.vercel.app',
+	site: 'https://abels-blog.vercel.app',
 	integrations: [mdx(), sitemap(), react()],
 	markdown: {
 		shikiConfig: {
