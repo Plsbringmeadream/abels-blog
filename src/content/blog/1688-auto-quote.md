@@ -2,7 +2,7 @@
 title: '用 Playwright 把 1688 报价自动化了'
 description: '给采购业务写的自动化工具：批量图搜 1688 相似商品，自动生成带缩略图的 Excel 报价单，支持断点续传和反检测。'
 pubDate: 'Jun 25 2026'
-heroImage: '../../assets/hero-1688-typing.gif'
+heroImage: '../../assets/hero-1688-typing.webp'
 tags: ['python', 'playwright', '自动化', '采购']
 ---
 
